@@ -18,7 +18,7 @@ const hexStringToCompare = '66696c5f72656d6f7665646174616361703a8342006646000800
 async function removeDatacap() {
   try {
     const params = { verifiedClient: 't0102', dataCapAmount: 34359738368, removalProposalID: [0] }
-    const encoded_object = api.encodeRemoveDataCapParameters(params)
+    const encoded_object = await api.encodeRemoveDataCapParameters(params)
 
     console.log(hexStringToCompare)
     console.log(encoded_object)

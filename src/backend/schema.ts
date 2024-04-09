@@ -1,5 +1,4 @@
-
-//@ts-nocheck
+// @ts-nocheck
 const Sequelize = require('sequelize')
 
 exports.message = {

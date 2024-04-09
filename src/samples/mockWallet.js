@@ -1,5 +1,5 @@
 // @ts-nocheck
-const { keyDerive, keyRecover, transactionSignLotus } = require('@zondax/filecoin-signing-tools/js')
+const { keyDerive, keyRecover, transactionSignLotus } = require('@zondax/filecoin-signing-tools')
 
 class MockWallet {
   constructor(mnemonic, path) {

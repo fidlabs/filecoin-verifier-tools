@@ -5,9 +5,10 @@ describe('test main package', () => {
     console.log(main.VerifyAPI)
     expect(main.VerifyAPI).toBeTruthy()
   })
-  it('test methods package', () => {
-    console.log(main.methods.testnet.ROOTKEY)
-    expect(main.methods.testnet).toBeTruthy()
+  it('test methods package', async () => {
+    let tn = await main.methods()
+    console.log(tn.testnet.ROOTKEY)
+    expect(tn).toBeTruthy()
   })
   it('test large-issue-parser package', () => {
     expect(main.ldnParser).toBeTruthy()

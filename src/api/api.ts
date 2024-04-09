@@ -12,7 +12,12 @@ const SIGNATURE_DOMAIN_SEPARATION_REMOVE_DATACAP = "fil_removedatacap:"
 
 export class VerifyAPI {
   constructor(lotusClient, walletContext, testnet = true) {
-    this.methods = testnet ? methods.testnet : methods.mainnet
+    this.methods = async() => {if (testnet) {
+      return  (await methods()).testnet
+    } else {
+      return  (await methods()).mainnet 
+    }
+    }
     this.client = lotusClient
     this.walletContext = walletContext
     this.chainHead = null
@@ -42,8 +47,9 @@ export class VerifyAPI {
   }
 
   async listVerifiers() {
-    const verifiers = await this.getPath(this.methods.VERIFREG, '1')
-    const listOfVerifiers = await this.methods.buildArrayData(verifiers, a => this.load(a))
+    const m = await this.methods()
+    const verifiers = await this.getPath(m.VERIFREG, '1')
+    const listOfVerifiers = await m.buildArrayData(verifiers, a => this.load(a))
     const returnList = []
     for (const [key, value] of listOfVerifiers) {
       returnList.push({
@@ -61,19 +67,21 @@ export class VerifyAPI {
 
   async proposeVerifier(verifierAccount, datacap, indexAccount, wallet, { gas } = { gas: 0 }) {
     // Not address but account in the form "t01004", for instance
-    const tx = this.methods.rootkey.propose(this.methods.verifreg.addVerifier(verifierAccount, datacap))
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const tx = m.rootkey.propose(m.verifreg.addVerifier(verifierAccount, datacap))
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
   }
 
 
-  encodeRemoveDataCapParameters(message: { verifiedClient: string, dataCapAmount: string, removalProposalID: number[] }) {
+  async encodeRemoveDataCapParameters(message: { verifiedClient: string, dataCapAmount: string, removalProposalID: number[] }) {
+    const m = await this.methods()
 
     const orderedProposalParams = [message.verifiedClient, message.dataCapAmount, message.removalProposalID]
     const prefix__hex_encoded = Buffer.from(SIGNATURE_DOMAIN_SEPARATION_REMOVE_DATACAP).toString('hex')
-    const encoded_params_buffer = this.methods.encode(this.methods.RemoveDataCapProposal, orderedProposalParams)
+    const encoded_params_buffer = m.encode(m.RemoveDataCapProposal, orderedProposalParams)
     const encoded_hex_params = encoded_params_buffer.toString('hex')
     const txBlob = prefix__hex_encoded.concat(encoded_hex_params)
     return txBlob
@@ -84,47 +92,55 @@ export class VerifyAPI {
     verifier1, signature1, verifier2, signature2,
     indexAccount, wallet, { gas } = { gas: 0 }) {
 
-    const removeDatacapRequest = this.methods.verifreg.removeVerifiedClientDataCap(
+    const m = await this.methods()
+
+    const removeDatacapRequest = m.verifreg.removeVerifiedClientDataCap(
       clientToRemoveDcFrom, datacap,
       { verifier: verifier1, signature: signature1 },
       { verifier: verifier2, signature: signature2 },
     )
-    const tx = this.methods.rootkey.propose(removeDatacapRequest)
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const tx = m.rootkey.propose(removeDatacapRequest)
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     return res['/']
   }
 
   async proposeRemoveVerifier(verifierAccount, indexAccount, wallet, { gas } = { gas: 0 }) {
     // Not address but account in the form "t01004", for instance
-    const tx = this.methods.rootkey.propose(this.methods.verifreg.removeVerifier(verifierAccount))
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const tx = m.rootkey.propose(m.verifreg.removeVerifier(verifierAccount))
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
   }
 
   async send(tx, indexAccount, wallet, { gas } = { gas: 0 }) {
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     return res['/']
   }
 
   async getReceipt(id) {
-    return this.methods.getReceipt(this.client, id)
+    const m = await this.methods()
+    return m.getReceipt(this.client, id)
   }
 
   async getMessage(cid) {
-    return this.methods.getMessage(this.client, cid)
+    const m = await this.methods()
+    return m.getMessage(this.client, cid)
   }
 
   async stateWaitMessage(cid) {
-    return this.methods.stateWaitMsg(this.client, cid)
+    const m = await this.methods()
+    return m.stateWaitMsg(this.client, cid)
   }
 
   async approveVerifier(verifierAccount, datacap, fromAccount, transactionId, indexAccount, wallet, { gas } = { gas: 0 }) {
     // Not address but account in the form "t01003", for instance
-    const add = this.methods.verifreg.addVerifier(verifierAccount, datacap)
-    const tx = this.methods.rootkey.approve(parseInt(transactionId, 10), { ...add, from: fromAccount })
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const add = m.verifreg.addVerifier(verifierAccount, datacap)
+    const tx = m.rootkey.approve(parseInt(transactionId, 10), { ...add, from: fromAccount })
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
@@ -132,9 +148,10 @@ export class VerifyAPI {
 
   async removeVerifier(verifierAccount, fromAccount, transactionId, indexAccount, wallet, { gas } = { gas: 0 }) {
     // Not address but account in the form "t01003", for instance
-    const remove = this.methods.verifreg.removeVerifier(verifierAccount)
-    const tx = this.methods.rootkey.approve(parseInt(transactionId, 10), { ...remove, from: fromAccount })
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const remove = m.verifreg.removeVerifier(verifierAccount)
+    const tx = m.rootkey.approve(parseInt(transactionId, 10), { ...remove, from: fromAccount })
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
@@ -142,17 +159,19 @@ export class VerifyAPI {
 
   async cancelVerifier(verifierAccount, datacap, fromAccount, transactionId, indexAccount, wallet, { gas } = { gas: 0 }) {
     // Not address but account in the form "t01003", for instance
-    const add = this.methods.verifreg.addVerifier(verifierAccount, datacap)
-    const tx = this.methods.rootkey.cancel(parseInt(transactionId, 10), { ...add, from: fromAccount })
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
+    const m = await this.methods()
+    const add = m.verifreg.addVerifier(verifierAccount, datacap)
+    const tx = m.rootkey.cancel(parseInt(transactionId, 10), { ...add, from: fromAccount })
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...tx, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
   }
 
   async listVerifiedClients() {
-    const verified = await this.getPath(this.methods.VERIFREG, '2')
-    const listOfVerified = await this.methods.buildArrayData(verified, a => this.load(a))
+    const m = await this.methods()
+    const verified = await this.getPath(m.VERIFREG, '2')
+    const listOfVerified = await m.buildArrayData(verified, a => this.load(a))
     const returnList = []
     for (const [key, value] of listOfVerified) {
       returnList.push({
@@ -164,12 +183,14 @@ export class VerifyAPI {
   }
 
   async listRootkeys() {
-    return this.listSigners(this.methods.ROOTKEY)
+    const m = await this.methods()
+    return this.listSigners(m.ROOTKEY)
   }
 
   async listSigners(addr) {
+    const m = await this.methods()
     const data = await this.getPath(addr, '')
-    const info = this.methods.decode(this.methods.msig_state, data)
+    const info = m.decode(m.msig_state, data)
     return info.signers
   }
 
@@ -235,8 +256,9 @@ export class VerifyAPI {
 
   async checkClient(verified) {
     try {
-      const data = await this.getPath(this.methods.VERIFREG, '')
-      const info = this.methods.decode(this.methods.verifreg_state, data)
+      const m = await this.methods()
+      const data = await this.getPath(m.VERIFREG, '')
+      const info = m.decode(m.verifreg_state, data)
       const clients = await info.clients(a => this.load(a))
       const datacap = await clients.find(a => this.load(a), verified)
       return [{ verified, datacap }]
@@ -247,8 +269,9 @@ export class VerifyAPI {
 
   async checkVerifier(verifier) {
     try {
-      const data = await this.getPath(this.methods.VERIFREG, '')
-      const info = this.methods.decode(this.methods.verifreg_state, data)
+      const m = await this.methods()
+      const data = await this.getPath(m.VERIFREG, '')
+      const info = m.decode(m.verifreg_state, data)
       const verifiers = await info.verifiers(a => this.load(a))
       const datacap = await verifiers.find(a => this.load(a), verifier)
       return [{ verifier, datacap }]
@@ -258,19 +281,21 @@ export class VerifyAPI {
   }
 
   async verifyClient(clientAddress, datacap, indexAccount, wallet, { gas } = { gas: 0 }) {
-    const arg = this.methods.verifreg.addVerifiedClient(clientAddress, datacap)
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...arg, gas })
+    const m = await this.methods()
+    const arg = m.verifreg.addVerifiedClient(clientAddress, datacap)
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...arg, gas })
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
     return res['/']
   }
 
   async multisigVerifyClient(multisigAddress, clientAddress, datacap, indexAccount, wallet, { gas } = { gas: 0 }) {
-    const tx = this.methods.verifreg.addVerifiedClient(clientAddress, datacap)
-    const m_actor = this.methods.actor(multisigAddress, this.methods.multisig)
+    const m = await this.methods()
+    const tx = m.verifreg.addVerifiedClient(clientAddress, datacap)
+    const m_actor = m.actor(multisigAddress, m.multisig)
 
     const proposeTx = m_actor.propose(tx)
-    const res = await this.methods.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...proposeTx, gas })
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...proposeTx, gas })
 
     // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
     // we return the messageID
@@ -278,13 +303,15 @@ export class VerifyAPI {
   }
 
   async approvePending(msig, tx, from, wallet) {
-    const m1_actor = this.methods.actor(msig, this.methods.multisig)
+    const m = await this.methods()
+    const m1_actor = m.actor(msig, m.multisig)
     const messageId = await this.send(m1_actor.approve(parseInt(tx.id), tx.tx), from, wallet)
     return messageId
   }
 
   async cancelPending(msig, tx, from, wallet) {
-    const m1_actor = this.methods.actor(msig, this.methods.multisig)
+    const m = await this.methods()
+    const m1_actor = m.actor(msig, m.multisig)
     return await this.send(m1_actor.cancel(parseInt(tx.id), tx.tx), from, wallet)
   }
 
@@ -307,45 +334,51 @@ export class VerifyAPI {
   }
 
   async multisigProposeClient(m0_addr, m1_addr, client, cap, from, wallet) {
+    const m = await this.methods()
     const amount = cap * 1073741824n // 1 GiB
-    const m0_actor = this.methods.actor(m0_addr, this.methods.multisig)
-    const m1_actor = this.methods.actor(m1_addr, this.methods.multisig)
-    const tx = this.methods.verifreg.addVerifiedClient(client, amount)
+    const m0_actor = m.actor(m0_addr, m.multisig)
+    const m1_actor = m.actor(m1_addr, m.multisig)
+    const tx = m.verifreg.addVerifiedClient(client, amount)
     const tx2 = m0_actor.propose(tx)
     return await this.send(m1_actor.propose(tx2), from, wallet)
   }
 
   async newMultisig(signers, threshold, cap, from, wallet) {
-    const tx = this.methods.init.exec(this.methods.multisigCID, this.methods.encode(this.methods.msig_constructor, [signers, threshold, cap, 1000]))
+    const m = await this.methods()
+    const tx = m.init.exec(m.multisigCID, m.encode(m.msig_constructor, [signers, threshold, cap, 1000]))
     const txid = await this.send({ ...tx, value: cap }, from, wallet)
     const receipt = await this.getReceipt(txid)
-    const [addr] = this.methods.decode(['list', 'address'], decode(Buffer.from(receipt.Return, 'base64')))
+    const [addr] = m.decode(['list', 'address'], decode(Buffer.from(receipt.Return, 'base64')))
     return addr
   }
 
   async multisigAdd(addr, signer, from, wallet) {
-    const actor = this.methods.actor(addr, this.methods.multisig)
+    const m = await this.methods()
+    const actor = m.actor(addr, m.multisig)
     const tx = actor.propose(actor.addSigner(signer, false))
     const txid = await this.send(tx, from, wallet)
     return this.getReceipt(txid)
   }
 
   async pendingRootTransactions() {
-    return this.pendingTransactions(this.methods.ROOTKEY)
+    const m = await this.methods()
+    return this.pendingTransactions(m.ROOTKEY)
   }
 
   async multisigInfo(addr) {
+    const m = await this.methods()
     const data = await this.getPath(addr, '')
-    return this.methods.decode(this.methods.msig_state, data)
+    return m.decode(m.msig_state, data)
   }
 
   async pendingTransactions(addr) {
+    const m = await this.methods()
     const data = await this.getPath(addr, '6')
-    const info = this.methods.decode(this.methods.pending, data)
+    const info = m.decode(m.pending, data)
     const obj = await info.asObject(a => this.load(a))
     const returnList = []
     for (const [k, v] of Object.entries(obj)) {
-      const parsed = this.methods.parse(v)
+      const parsed = m.parse(v)
       returnList.push({
         id: parseInt(k),
         tx: { ...v, from: v.signers[0] },

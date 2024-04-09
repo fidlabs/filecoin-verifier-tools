@@ -1,4 +1,4 @@
-//@ts-nocheck
+// @ts-nocheck
 import { VerifyAPI } from './api'
 import MockWallet from '../samples/mockWallet'
 import { rootkey_mnemonic, verifier_mnemonic, path } from '../samples/constants'
@@ -24,7 +24,7 @@ function compareStringToBytesArray(string, compareArray) {
 }
 
 describe('should test the api', () => {
-  it('initialize api', async () => {
+  beforeAll(async () => {
     rkhWallet = new MockWallet(rootkey_mnemonic, path)
     rkhApi = new VerifyAPI( // eslint-disable-line
       VerifyAPI.standAloneProvider('https://lotus.filecoin.nevermined.rocks/rpc/v0'
@@ -70,19 +70,15 @@ describe('should test the api', () => {
     expect(rkhApi.chainHead).not.toBeNull()
   })
 
-
-
-  it("test encodeRemoveDataCapParameters", async () => {
-
+  it('test encodeRemoveDataCapParameters', async () => {
     const bytes_array_to_compare = [102, 105, 108, 95, 114, 101, 109, 111, 118, 101, 100, 97, 116, 97, 99, 97, 112, 58, 131, 66, 0, 102, 70, 0, 8, 0, 0, 0, 0, 129, 0]
 
     const hexStringToCompare = '66696c5f72656d6f7665646174616361703a83420066460008000000008100'
 
     const params = { verifiedClient: 't0102', dataCapAmount: 34359738368, removalProposalID: [0] }
-    const encoded_hex_string = verifierApi.encodeRemoveDataCapParameters(params)
+    const encoded_hex_string = await verifierApi.encodeRemoveDataCapParameters(params)
     expect(encoded_hex_string).toBe(hexStringToCompare)
-    expect(compareStringToBytesArray(encoded_hex_string,bytes_array_to_compare)).toBeTruthy()
-
+    expect(compareStringToBytesArray(encoded_hex_string, bytes_array_to_compare)).toBeTruthy()
   })
   //   it("test send", async ()=> {
   // No need

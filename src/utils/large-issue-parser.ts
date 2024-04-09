@@ -17,5 +17,5 @@ export {
   parseApprovedRequestWithSignerAddress,
   parseMultisigReconnectComment,
   ldnv3TriggerCommentParser,
-  parseDataCapRemoval
+  parseDataCapRemoval,
 }

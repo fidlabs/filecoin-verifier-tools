@@ -1,4 +1,3 @@
-
 import { LotusRPC } from '@filecoin-shipyard/lotus-client-rpc'
 import { NodejsProvider as Provider } from '@filecoin-shipyard/lotus-client-provider-nodejs'
 import { mainnet } from '@filecoin-shipyard/lotus-client-schema'

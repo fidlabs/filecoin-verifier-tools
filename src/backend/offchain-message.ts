@@ -1,5 +1,4 @@
-
-//@ts-nocheck
+// @ts-nocheck
 const signer = require('@zondax/filecoin-signing-tools/js')
 
 function makeMessage(data) {

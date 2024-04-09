@@ -5,3 +5,4 @@ spreadsheet/createSpreadsheet.js
 lotus/token
 lib
 yarn-error.log
+package-lock.json

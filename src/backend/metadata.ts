@@ -1,10 +1,10 @@
 // Adding metadata to the DB
 
-//@ts-nocheck
+// @ts-nocheck
 const Sequelize = require('sequelize')
 const constants = require('../samples/constants')
 const jayson = require('jayson')
-const signer = require('@zondax/filecoin-signing-tools/js')
+const signer = require('@zondax/filecoin-signing-tools')
 const offchainMessage = require('./offchain-message')
 const schema = require('./schema')
 

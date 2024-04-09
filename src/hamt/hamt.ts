@@ -1,4 +1,4 @@
-//@ts-nocheck
+// @ts-nocheck
 import { encode, Address } from '@glif/filecoin-address'
 import sha256 from 'js-sha256'
 

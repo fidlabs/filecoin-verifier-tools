@@ -1,4 +1,4 @@
-import { keyDerive } from '@zondax/filecoin-signing-tools/js'
+import { keyDerive } from '@zondax/filecoin-signing-tools'
 import fetch from 'node-fetch'
 import { methods as m } from '../../filecoin/methods.js'
 import { decode } from 'cbor'
