@@ -9,8 +9,8 @@
   },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "build": "tsc",
-    "lint": "eslint src/**/*.{js,ts}",
+    "build": "rm -r lib && tsc",
+    "lint": "eslint src/**/*.{js,ts} --ignore-pattern '*.d.ts'",
     "lint-fix": "eslint . --fix"
   },
   "keywords": [],
@@ -61,6 +61,7 @@
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.1.1"
+    "eslint-plugin-promise": "^6.1.1",
+    "typescript-eslint": "^7.6.0"
   }
 }

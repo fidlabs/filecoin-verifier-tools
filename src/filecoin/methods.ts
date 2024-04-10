@@ -3,8 +3,6 @@ import * as hamt from '../hamt/hamt-2'
 import blake from 'blakejs'
 import * as address from '@glif/filecoin-address'
 
-const signer = import('@zondax/filecoin-signing-tools/js')
-
 function cborEncode(...obj) {
   const enc = new cbor.Encoder()
   enc.addSemanticType(Buffer, enc._pushBuffer)
@@ -539,7 +537,7 @@ async function make(testnet) {
 
   function actor(address, spec) {
     const res = {}
-    for (const [num, method] of Object.entries < any > (spec)) {
+    for (const [num, method] of Object.entries < any > (spec)) { // eslint-disable-line
       res[method.name] = function (data) {
         let params
         if (arguments.length > 1) {

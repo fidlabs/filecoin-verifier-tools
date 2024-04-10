@@ -1,4 +1,3 @@
-import { LotusRPC } from '@filecoin-shipyard/lotus-client-rpc'
 import { NodejsProvider as Provider } from '@filecoin-shipyard/lotus-client-provider-nodejs'
 import { mainnet } from '@filecoin-shipyard/lotus-client-schema'
 import { readFileSync } from 'fs'
@@ -13,17 +12,19 @@ const provider = new Provider(lotus_endpoint, {
   },
 })
 
-const client = new LotusRPC(provider, { schema: mainnet.fullNode })
-
-const mockWallet = new MockWallet(verifier_mnemonic, path)
-
-const key = keyDerive(verifier_mnemonic, `${path}/2`, '')
-console.log('verifier address', key.address)
-
-const key2 = keyDerive(rootkey_mnemonic, `${path}/2`, '')
-console.log('rootkey address', key2.address)
-
 async function main() {
+  const LotusRPC = (await import('@filecoin-shipyard/lotus-client-rpc')).LotusRPC
+
+  const client = new LotusRPC(provider, { schema: mainnet.fullNode })
+
+  const mockWallet = new MockWallet(verifier_mnemonic, path)
+
+  const key = keyDerive(verifier_mnemonic, `${path}/2`, '')
+  console.log('verifier address', key.address)
+
+  const key2 = keyDerive(rootkey_mnemonic, `${path}/2`, '')
+  console.log('rootkey address', key2.address)
+
   const methods = (await mth()).testnet
   await methods.sendTx(client, 2, mockWallet, methods.encodeSend('t01000'))
   process.exit(0)
