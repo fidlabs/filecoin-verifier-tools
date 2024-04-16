@@ -560,6 +560,13 @@ async function make(testnet) {
     return res
   }
 
+  const evm = {
+    3844450837: {
+      name: 'invokeContract',
+      input: 'buffer'
+    },
+  }
+
   const multisig = {
     3: {
       name: 'approve',
@@ -741,7 +748,7 @@ async function make(testnet) {
 
   function parse(tx) {
     try {
-      const actor = reg[tx.to] || multisig
+      const actor = reg[tx.to] || (tx.method === 3844450837 ? evm : multisig);
       const { name, input } = actor[tx.method]
       const params = decode(input, cbor.decode(tx.params))
       return { name, params, parsed: params && parse(params) }
@@ -791,6 +798,7 @@ async function make(testnet) {
     rootkey: actor(ROOTKEY, multisig),
     verifreg: actor(VERIFREG, verifreg),
     init: actor(INIT_ACTOR, init),
+    evm,
     msig_constructor,
     msig_state,
     verifreg_state,
