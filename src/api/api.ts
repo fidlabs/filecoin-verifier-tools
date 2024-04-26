@@ -302,6 +302,20 @@ export class VerifyAPI {
     return res['/']
   }
 
+  async multisigEvmInvoke(multisigAddress, contractAddress, calldata, indexAccount, wallet, { gas } = { gas: 0 }) {
+    const m = await this.methods()
+    const evm_actor = m.actor(contractAddress, m.evm)
+    const tx = evm_actor.invokeContract(calldata)
+    const m_actor = m.actor(multisigAddress, m.multisig)
+
+    const proposeTx = m_actor.propose(tx)
+    const res = await m.sendTx(this.client, indexAccount, this.checkWallet(wallet), { ...proposeTx, gas })
+    
+    // res has this shape: {/: "bafy2bzaceb32fwcf7uatfxfs367f3tw5yejcresnw4futiz35heb57ybaqxvu"}
+    // we return the messageID
+    return res['/']
+  }
+
   async approvePending(msig, tx, from, wallet) {
     const m = await this.methods()
     const m1_actor = m.actor(msig, m.multisig)
