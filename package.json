@@ -1,6 +1,6 @@
 {
   "name": "filecoin-verifier-tools",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "A set of common utilities for filecoin plus",
   "main": "lib/index.js",
   "repository": {
